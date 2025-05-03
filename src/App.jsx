@@ -1,74 +1,71 @@
 import React, { useState } from 'react';
-import './index.css';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Copy } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const gerarNumeros = (quantidadeJogos) => {
-  const resultadosMock = [
-    3, 7, 8, 10, 11, 13, 14, 15, 17, 18,
-    2, 5, 6, 9, 12, 16, 19, 20, 21, 23,
-    1, 4, 22, 24, 25
-  ];
-
-  const jogos = [];
-  for (let i = 0; i < quantidadeJogos; i++) {
-    const shuffle = [...resultadosMock].sort(() => 0.5 - Math.random());
-    const jogo = shuffle.slice(0, 15).sort((a, b) => a - b);
-    jogos.push(jogo);
+const gerarNumeros = () => {
+  const numeros = new Set();
+  while (numeros.size < 15) {
+    numeros.add(Math.floor(Math.random() * 25) + 1);
   }
-  return jogos;
+  return Array.from(numeros).sort((a, b) => a - b);
 };
 
-function App() {
-  const [quantidade, setQuantidade] = useState(5);
-  const [jogos, setJogos] = useState([]);
-  const [carregando, setCarregando] = useState(false);
+export default function OraculoLotofacil() {
+  const [jogo, setJogo] = useState([]);
+  const [copiado, setCopiado] = useState(false);
 
-  const gerarJogos = () => {
-    setCarregando(true);
-    setTimeout(() => {
-      const novosJogos = gerarNumeros(quantidade);
-      setJogos(novosJogos);
-      setCarregando(false);
-    }, 500);
+  const handleGerar = () => {
+    setJogo(gerarNumeros());
+    setCopiado(false);
+  };
+
+  const copiarParaClipboard = () => {
+    navigator.clipboard.writeText(jogo.join(', '));
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-4">
-      <div className="max-w-xl mx-auto text-center">
-        <h1 className="text-3xl font-bold mb-4">Oráculo da Lotofácil 🔮</h1>
-        <p className="mb-4">Gere jogos com base em padrões inteligentes para aumentar suas chances!</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-black to-zinc-900 text-white p-4">
+      <motion.h1 
+        className="text-3xl md:text-5xl font-bold mb-6 text-center"
+        initial={{ opacity: 0, y: -30 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.6 }}
+      >
+        Oráculo da Lotofácil 🔮
+      </motion.h1>
 
-        <div className="flex justify-center gap-2 mb-4">
-          <input
-            type="number"
-            className="text-black p-2 rounded w-24"
-            value={quantidade}
-            onChange={(e) => setQuantidade(parseInt(e.target.value))}
-            min={1}
-            max={20}
-          />
-          <button
-            onClick={gerarJogos}
-            className="bg-green-600 px-4 py-2 rounded hover:bg-green-700 transition"
-          >
-            Gerar Jogos
-          </button>
-        </div>
+      <Card className="bg-zinc-800 border-zinc-700 w-full max-w-md">
+        <CardContent className="p-6 space-y-4">
+          <Button onClick={handleGerar} className="w-full bg-purple-600 hover:bg-purple-700">
+            Gerar Números da Sorte
+          </Button>
 
-        {carregando && <p className="animate-pulse">🔄 Gerando jogos...</p>}
-
-        <div className="mt-4 grid gap-3">
-          {jogos.map((jogo, idx) => (
-            <div
-              key={idx}
-              className="bg-gray-700 p-2 rounded border border-green-500"
-            >
-              <p>🎰 Jogo {idx + 1}: {jogo.join(', ')}</p>
+          {jogo.length > 0 && (
+            <div className="bg-zinc-900 rounded-xl p-4 flex flex-wrap justify-center gap-2 text-lg border border-zinc-700">
+              {jogo.map((n, i) => (
+                <div key={i} className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-700 text-white">
+                  {n.toString().padStart(2, '0')}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          )}
+
+          {jogo.length > 0 && (
+            <Button onClick={copiarParaClipboard} variant="outline" className="w-full border-purple-600 text-purple-300">
+              <Copy className="mr-2 h-4 w-4" /> {copiado ? 'Copiado!' : 'Copiar jogo'}
+            </Button>
+          )}
+
+          <a href="https://wa.me/SEUNUMERO" target="_blank" className="block text-center text-sm text-green-400 hover:underline pt-2">
+            Receber jogo exclusivo no WhatsApp
+          </a>
+        </CardContent>
+      </Card>
     </div>
   );
 }
-
-export default App;
